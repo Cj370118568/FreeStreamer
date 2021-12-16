@@ -368,6 +368,9 @@ void Audio_Queue::handleAudioPackets(UInt32 inNumberBytes, UInt32 inNumberPacket
         }
         
         // copy data to the audio queue buffer
+        if (NULL == m_audioQueueBuffer || m_fillBufferIndex >= config->bufferCount) {
+            return;
+        }
         AudioQueueBufferRef buf = m_audioQueueBuffer[m_fillBufferIndex];
         memcpy((char*)buf->mAudioData, data, packetSize);
         
@@ -482,7 +485,10 @@ void Audio_Queue::enqueueBuffer()
     m_packetsFilled = 0;
     
     // wait until next buffer is not in use
-    
+
+    if (NULL == m_bufferInUse || m_fillBufferIndex >= config->bufferCount) {
+        return;
+    }
     while (m_bufferInUse[m_fillBufferIndex]) {
         AQ_TRACE("waiting for buffer %u\n", (unsigned int)m_fillBufferIndex);
         
